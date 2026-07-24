@@ -4,13 +4,6 @@
 
 class NewTab {
   /**
-   * Internal page used to render locally stored files
-   *
-   * @type {string}
-   */
-  static #localFilePage = 'html/local_file.html';
-
-  /**
    * Internal fallback page shown when no local file has been stored
    *
    * @type {string}
@@ -106,7 +99,18 @@ class NewTab {
         break;
       case 'local_file':
         if (options.local_file) {
-          await NewTab.#openNewTabPage(browser.runtime.getURL(NewTab.#localFilePage), options.focus_website, tab);
+          document.body.insertAdjacentHTML('beforeend', options.local_file);
+
+          // set page title if there is a title tag in the document
+          const match = options.local_file.match(/<title[^>]*>([^<]+)<\/title>/i);
+          if (match) {
+            document.title = match[1];
+          }
+
+          if (options.focus_website) {
+            document.body.setAttribute('tabindex', '-1');
+            document.body.focus();
+          }
         }
         else {
           await NewTab.#openNewTabPage(browser.runtime.getURL(NewTab.#localFileMissingPage), options.focus_website, tab);
